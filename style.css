@@ -1086,3 +1086,164 @@
         padding: 3rem 0 1.5rem;
       }
     }
+
+    @media (max-width: 414px) {
+      .container {
+        width: min(100%, calc(100% - 1rem));
+      }
+
+      .brand {
+        font-size: 1rem;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.8rem, 7vw, 2.5rem);
+      }
+
+      .hero p {
+        font-size: 0.95rem;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+
+      .card,
+      .program-card,
+      .icon-card,
+      .support-card,
+      .testimonial-card,
+      .school-card,
+      .deadline-card,
+      .finance-card,
+      .requirement-card,
+      .benefit-card,
+      .cost-content,
+      .info-banner,
+      .process-step {
+        padding: 1.25rem;
+      }
+
+      .metric-value {
+        font-size: 2rem;
+      }
+
+      .cta {
+        padding: 0.75rem 1.2rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 375px) {
+      .container {
+        width: min(100%, calc(100% - 0.75rem));
+      }
+
+      .brand {
+        font-size: 0.95rem;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+      }
+
+      .hero p {
+        font-size: 0.9rem;
+      }
+
+      .section-title {
+        font-size: 1.4rem;
+      }
+
+      .card,
+      .program-card,
+      .icon-card,
+      .support-card,
+      .testimonial-card,
+      .school-card,
+      .deadline-card,
+      .finance-card,
+      .requirement-card,
+      .benefit-card,
+      .cost-content,
+      .info-banner,
+      .process-step {
+        padding: 1rem;
+      }
+
+      .metric-value {
+        font-size: 1.8rem;
+      }
+
+      .cta {
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+      }
+
+      .nav-links {
+        gap: 0.4rem;
+      }
+
+      .nav-links a {
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .container {
+        width: min(100%, calc(100% - 0.5rem));
+      }
+
+      .brand {
+        font-size: 0.9rem;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+      }
+
+      .hero p {
+        font-size: 0.85rem;
+      }
+
+      .section-title {
+        font-size: 1.3rem;
+      }
+
+      .card,
+      .program-card,
+      .icon-card,
+      .support-card,
+      .testimonial-card,
+      .school-card,
+      .deadline-card,
+      .finance-card,
+      .requirement-card,
+      .benefit-card,
+      .cost-content,
+      .info-banner,
+      .process-step {
+        padding: 0.9rem;
+      }
+
+      .metric-value {
+        font-size: 1.6rem;
+      }
+
+      .cta {
+        padding: 0.65rem 0.9rem;
+        font-size: 0.8rem;
+      }
+
+      .nav-links {
+        gap: 0.35rem;
+      }
+
+      .nav-links a {
+        font-size: 0.85rem;
+      }
+
+      .footer {
+        padding: 2rem 0 1rem;
+      }
+    }
