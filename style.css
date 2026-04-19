@@ -112,6 +112,7 @@
       font-weight: 600;
       text-decoration: none;
       transition: transform 0.2s ease, background 0.2s ease;
+      border: 1.5px solid #999999;
     }
 
     .cta:hover {
@@ -157,7 +158,7 @@
     .secondary {
       background: rgba(255, 255, 255, 0.12);
       color: white;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1.5px solid #999999;
     }
 
     section {
@@ -726,6 +727,7 @@
       color: white;
       text-decoration: none;
       font-weight: 600;
+      border: 1.5px solid #999999;
     }
 
     .footer {
