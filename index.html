@@ -1,0 +1,2579 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumina Academy — Student Organization Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS & VARIABLES
+═══════════════════════════════════════════════ */
+:root {
+  --cream: #F5F1EB;
+  --cream-dark: #EDE8DF;
+  --ink: #1A1714;
+  --ink-soft: #3D3733;
+  --ink-muted: #7A746E;
+  --gold: #C9A84C;
+  --gold-light: #E8D5A3;
+  --gold-pale: #FAF5E8;
+  --teal: #2A6B6B;
+  --teal-light: #E8F3F3;
+  --red-accent: #C44B3A;
+  --white: #FEFCF8;
+  --card-bg: #FEFCF8;
+  --border: rgba(26,23,20,0.1);
+  --border-gold: rgba(201,168,76,0.3);
+  --shadow-soft: 0 2px 16px rgba(26,23,20,0.06);
+  --shadow-card: 0 4px 24px rgba(26,23,20,0.08);
+  --shadow-hover: 0 8px 40px rgba(26,23,20,0.14);
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --nav-h: 68px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+  --transition-slow: 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+[data-theme="dark"] {
+  --cream: #181512;
+  --cream-dark: #201C18;
+  --ink: #F0EBE3;
+  --ink-soft: #C8BFB5;
+  --ink-muted: #7A746E;
+  --gold: #D4AA5C;
+  --gold-light: #4A3E1F;
+  --gold-pale: #231E12;
+  --teal: #4A9B9B;
+  --teal-light: #162626;
+  --white: #1E1A16;
+  --card-bg: #201C18;
+  --border: rgba(240,235,227,0.08);
+  --border-gold: rgba(212,170,92,0.25);
+  --shadow-soft: 0 2px 16px rgba(0,0,0,0.3);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-hover: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.65;
+  font-size: 15px;
+  transition: background var(--transition), color var(--transition);
+  overflow-x: hidden;
+}
+img { max-width: 100%; display: block; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; font-family: var(--font-body); border: none; background: none; }
+ul { list-style: none; }
+
+/* ═══════════════════════════════════════════════
+   PAGE SYSTEM — show/hide pages
+═══════════════════════════════════════════════ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ═══════════════════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════════════════ */
+#loader {
+  position: fixed; inset: 0;
+  background: var(--cream);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  transition: opacity 0.6s, visibility 0.6s;
+}
+#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-wordmark {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.loader-bar {
+  width: 160px; height: 2px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.loader-bar::after {
+  content: '';
+  position: absolute; left: -100%; top: 0;
+  width: 100%; height: 100%;
+  background: var(--gold);
+  animation: loadBar 1.4s ease forwards;
+}
+@keyframes loadBar { to { left: 0; } }
+
+/* ═══════════════════════════════════════════════
+   NAVBAR
+═══════════════════════════════════════════════ */
+#navbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  z-index: 1000;
+  transition: background var(--transition), box-shadow var(--transition), backdrop-filter var(--transition);
+}
+#navbar.scrolled {
+  background: rgba(245,241,235,0.88);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 var(--border);
+}
+[data-theme="dark"] #navbar.scrolled {
+  background: rgba(24,21,18,0.88);
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.nav-logo-mark {
+  width: 34px; height: 34px;
+  background: var(--ink);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gold);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-link {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: background var(--transition), color var(--transition);
+  cursor: pointer;
+}
+.nav-link:hover, .nav-link.active {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.nav-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-portal {
+  padding: 8px 18px;
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background var(--transition), transform var(--transition);
+}
+.btn-portal:hover {
+  background: var(--ink-soft);
+  transform: translateY(-1px);
+}
+.theme-toggle {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-muted);
+  font-size: 16px;
+  transition: background var(--transition), color var(--transition);
+}
+.theme-toggle:hover {
+  background: var(--cream-dark);
+  color: var(--ink);
+}
+.hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  transition: background var(--transition);
+}
+.hamburger:hover { background: var(--cream-dark); }
+.hamburger span {
+  display: block; width: 18px; height: 1.5px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform var(--transition), opacity var(--transition);
+}
+
+/* Mobile nav */
+.mobile-menu {
+  position: fixed; top: var(--nav-h); left: 0; right: 0;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px 24px;
+  transform: translateY(-8px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition);
+  z-index: 999;
+}
+.mobile-menu.open {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+.mobile-menu .nav-link {
+  display: block;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLL ANIMATIONS
+═══════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-left { opacity: 0; transform: translateX(-24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+.reveal-right { opacity: 0; transform: translateX(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+.delay-4 { transition-delay: 0.4s; }
+.delay-5 { transition-delay: 0.5s; }
+
+/* ═══════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════ */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+.container-sm { max-width: 800px; margin: 0 auto; padding: 0 32px; }
+.section { padding: 96px 0; }
+.section-sm { padding: 64px 0; }
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.section-label::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--gold);
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.section-subtitle {
+  font-size: 15.5px;
+  color: var(--ink-muted);
+  max-width: 520px;
+  line-height: 1.7;
+}
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.text-center { text-align: center; }
+.text-gold { color: var(--gold); }
+.text-muted { color: var(--ink-muted); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--cream);
+}
+.btn-primary:hover { background: var(--ink-soft); transform: translateY(-2px); box-shadow: var(--shadow-card); }
+.btn-gold {
+  background: var(--gold);
+  color: var(--ink);
+}
+.btn-gold:hover { background: #B8973D; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(201,168,76,0.3); }
+.btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover { background: var(--cream-dark); transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 10px 18px;
+}
+.btn-ghost:hover { color: var(--ink); background: var(--cream-dark); }
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+}
+.card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+  border-color: var(--border-gold);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11.5px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+}
+.badge-gold { background: var(--gold-light); color: var(--ink); }
+.badge-teal { background: var(--teal-light); color: var(--teal); }
+.badge-red { background: rgba(196,75,58,0.1); color: var(--red-accent); }
+.badge-neutral { background: var(--cream-dark); color: var(--ink-muted); }
+
+/* Divider */
+.divider { height: 1px; background: var(--border); margin: 32px 0; }
+.divider-gold { background: var(--border-gold); }
+
+/* Tag row */
+.tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+/* ═══════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+═══════════════════════════════════════════════ */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 9998;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--shadow-hover);
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  min-width: 240px;
+  max-width: 320px;
+}
+.toast.show { transform: translateX(0); }
+.toast-icon { font-size: 16px; flex-shrink: 0; }
+.toast-success { border-left: 3px solid #4CAF50; }
+.toast-info { border-left: 3px solid var(--gold); }
+
+/* ═══════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,23,20,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--transition), visibility var(--transition);
+}
+.modal-overlay.open { opacity: 1; visibility: visible; }
+.modal {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  max-width: 480px; width: 100%;
+  transform: scale(0.94) translateY(12px);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: var(--shadow-hover);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-muted);
+  font-size: 18px;
+  transition: background var(--transition);
+}
+.modal-close:hover { background: var(--cream-dark); }
+
+/* ═══════════════════════════════════════════════
+   ████  PAGE 1: LANDING  ████
+═══════════════════════════════════════════════ */
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding-top: var(--nav-h);
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 70% 50%, rgba(201,168,76,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(42,107,107,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hero-texture {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231A1714' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+}
+.hero-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 32px; width: 100%; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold-pale);
+  border: 1px solid var(--border-gold);
+  border-radius: 100px;
+  padding: 6px 14px 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeSlideUp 0.8s 0.3s ease forwards;
+}
+.hero-eyebrow-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.hero-headline {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 5.2rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeSlideUp 0.8s 0.45s ease forwards;
+}
+.hero-headline em {
+  font-style: italic;
+  color: var(--gold);
+}
+.hero-desc {
+  font-size: 17px;
+  color: var(--ink-muted);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 36px;
+  opacity: 0;
+  animation: fadeSlideUp 0.8s 0.6s ease forwards;
+}
+.hero-actions {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeSlideUp 0.8s 0.75s ease forwards;
+}
+.hero-stats {
+  display: flex; gap: 40px;
+  margin-top: 64px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  opacity: 0;
+  animation: fadeSlideUp 0.8s 0.9s ease forwards;
+}
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1;
+  display: block;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+.hero-right {
+  position: absolute;
+  right: 32px; top: 50%;
+  transform: translateY(-50%);
+  width: 340px;
+  display: flex; flex-direction: column; gap: 16px;
+  opacity: 0;
+  animation: fadeSlideRight 0.9s 1s ease forwards;
+}
+@keyframes fadeSlideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeSlideRight { from{opacity:0;transform:translateY(-50%) translateX(20px)} to{opacity:1;transform:translateY(-50%) translateX(0)} }
+
+.hero-card-float {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+.hero-card-mini {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13.5px;
+}
+.hero-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.event-chip {
+  background: var(--teal-light);
+  border: 1px solid rgba(42,107,107,0.15);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px;
+}
+.event-chip-date {
+  background: var(--teal);
+  color: white;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+/* Announcements strip */
+.announce-strip {
+  background: var(--cream-dark);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+  overflow: hidden;
+}
+.announce-ticker {
+  display: flex;
+  animation: ticker 30s linear infinite;
+  white-space: nowrap;
+}
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ticker-item {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 0 40px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+
+/* Mission section */
+.mission-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.mission-pane {
+  padding: 60px;
+  position: relative;
+}
+.mission-pane:first-child {
+  border-right: 1px solid var(--border);
+  background: var(--ink);
+  color: var(--cream);
+}
+.mission-pane:first-child .section-label { color: var(--gold-light); }
+.mission-pane:first-child .section-label::before { background: var(--gold-light); }
+.mission-pane-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+.mission-pane:first-child .mission-pane-title { color: #F0EBE3; }
+.mission-pane:last-child .mission-pane-title { color: var(--ink); }
+.mission-pane-body {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink-muted);
+}
+.mission-pane:first-child .mission-pane-body { color: rgba(240,235,227,0.65); }
+
+/* News section */
+.news-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition);
+}
+.news-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-gold);
+}
+.news-img {
+  height: 180px;
+  background: var(--cream-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.news-img-pattern {
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(201,168,76,0.06) 10px,
+    rgba(201,168,76,0.06) 11px
+  );
+}
+.news-content { padding: 22px; }
+.news-meta {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+}
+.news-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.news-excerpt { font-size: 13.5px; color: var(--ink-muted); line-height: 1.65; }
+
+/* Events featured */
+.event-card-large {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 36px;
+  display: flex; gap: 28px;
+  align-items: flex-start;
+  transition: all var(--transition);
+}
+.event-card-large:hover {
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-gold);
+  transform: translateY(-2px);
+}
+.event-date-block {
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  text-align: center;
+  flex-shrink: 0;
+  min-width: 72px;
+}
+.event-date-day {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+  display: block;
+}
+.event-date-month {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: block;
+  margin-top: 4px;
+}
+.event-card-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.event-detail { font-size: 13px; color: var(--ink-muted); margin-bottom: 4px; }
+
+/* ═══════════════════════════════════════════════
+   ████  PAGE 2: ABOUT  ████
+═══════════════════════════════════════════════ */
+.page-hero {
+  padding: 140px 0 80px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+}
+.page-hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.page-hero-sub { font-size: 16px; color: var(--ink-muted); max-width: 440px; }
+
+/* Officer cards */
+.officer-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  text-align: center;
+  transition: all var(--transition);
+}
+.officer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-gold);
+}
+.officer-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--gold-light);
+}
+.officer-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.officer-role {
+  font-size: 12px;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.officer-dept { font-size: 13px; color: var(--ink-muted); }
+
+/* Timeline */
+.timeline { position: relative; padding-left: 40px; }
+.timeline::before {
+  content: '';
+  position: absolute; left: 11px; top: 6px; bottom: 6px;
+  width: 1px; background: var(--border-gold);
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 40px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute; left: -32px; top: 6px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid var(--cream);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.timeline-year {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.timeline-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.timeline-text { font-size: 14px; color: var(--ink-muted); line-height: 1.65; }
+
+/* Achievement cards */
+.achieve-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex; align-items: flex-start; gap: 16px;
+  transition: all var(--transition);
+}
+.achieve-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); }
+.achieve-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--gold-pale);
+  border: 1px solid var(--border-gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   ████  PAGE 3: PORTAL (LOGIN)  ████
+═══════════════════════════════════════════════ */
+.portal-login-wrap {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.portal-left {
+  background: var(--ink);
+  padding: 60px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.portal-left-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.portal-left-content { position: relative; z-index: 1; }
+.portal-brand {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #F0EBE3;
+  margin-bottom: 8px;
+}
+.portal-brand-sub { font-size: 13px; color: rgba(240,235,227,0.4); font-family: var(--font-mono); letter-spacing: 0.08em; }
+.portal-quote {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #F0EBE3;
+  line-height: 1.3;
+  margin: 48px 0 20px;
+}
+.portal-quote-attr { font-size: 13px; color: rgba(240,235,227,0.4); font-family: var(--font-mono); letter-spacing: 0.06em; }
+.portal-right {
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  padding: 60px;
+}
+.portal-form-wrap { width: 100%; max-width: 380px; }
+.portal-form-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.portal-form-sub { font-size: 14px; color: var(--ink-muted); margin-bottom: 36px; }
+
+/* Form inputs */
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 7px;
+  letter-spacing: 0.02em;
+}
+.form-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+.form-input:focus {
+  border-color: var(--gold);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+}
+.form-input::placeholder { color: var(--ink-muted); }
+
+/* Role selector */
+.role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
+.role-opt {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+.role-opt:hover { border-color: var(--border-gold); color: var(--ink); }
+.role-opt.selected {
+  border-color: var(--gold);
+  background: var(--gold-pale);
+  color: var(--ink);
+  font-weight: 500;
+}
+.role-opt-icon { font-size: 20px; margin-bottom: 4px; }
+.demo-hint {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  margin-bottom: 20px;
+}
+.demo-hint strong { color: var(--ink); }
+
+/* ═══════════════════════════════════════════════
+   ████  PAGE 4: DASHBOARD  ████
+═══════════════════════════════════════════════ */
+.dashboard-wrap {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  padding-top: var(--nav-h);
+}
+.sidebar {
+  background: var(--card-bg);
+  border-right: 1px solid var(--border);
+  padding: 32px 20px;
+  position: sticky;
+  top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow-y: auto;
+}
+.sidebar-user {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px;
+  background: var(--cream-dark);
+  border-radius: var(--radius);
+  margin-bottom: 28px;
+}
+.sidebar-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.sidebar-name { font-weight: 500; font-size: 14px; color: var(--ink); }
+.sidebar-id { font-size: 11px; color: var(--ink-muted); font-family: var(--font-mono); }
+.sidebar-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 0 8px;
+  margin-bottom: 6px;
+  margin-top: 20px;
+}
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: background var(--transition), color var(--transition);
+}
+.sidebar-nav-item:hover { background: var(--cream-dark); color: var(--ink); }
+.sidebar-nav-item.active {
+  background: var(--gold-pale);
+  color: var(--ink);
+  font-weight: 500;
+}
+.sidebar-nav-item.active .nav-icon { color: var(--gold); }
+.nav-icon { width: 18px; text-align: center; font-size: 14px; }
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* Dashboard main */
+.dash-main { padding: 36px; background: var(--cream); min-height: calc(100vh - var(--nav-h)); }
+.dash-header { margin-bottom: 28px; }
+.dash-welcome { font-family: var(--font-display); font-size: 1.9rem; font-weight: 600; color: var(--ink); }
+.dash-date { font-size: 13px; color: var(--ink-muted); font-family: var(--font-mono); margin-top: 4px; }
+.dash-section-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; color: var(--ink); margin-bottom: 14px; }
+
+/* Stat cards */
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  transition: all var(--transition);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); border-color: var(--border-gold); }
+.stat-card-label { font-size: 12px; color: var(--ink-muted); font-family: var(--font-mono); letter-spacing: 0.04em; margin-bottom: 8px; }
+.stat-card-value { font-family: var(--font-display); font-size: 2rem; font-weight: 600; color: var(--ink); line-height: 1; }
+.stat-card-sub { font-size: 12px; color: var(--ink-muted); margin-top: 6px; }
+.stat-card-trend { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; margin-top: 8px; }
+.trend-up { color: #4CAF50; }
+.trend-neutral { color: var(--gold); }
+
+/* Subject table */
+.subject-table { width: 100%; border-collapse: collapse; }
+.subject-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+}
+.subject-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.subject-table tr:last-child td { border-bottom: none; }
+.subject-table tr:hover td { background: var(--cream-dark); }
+.grade-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+.grade-a { background: rgba(76,175,80,0.12); color: #2E7D32; }
+.grade-b { background: rgba(201,168,76,0.15); color: #795A00; }
+.grade-c { background: rgba(196,75,58,0.1); color: var(--red-accent); }
+
+/* Attendance bar */
+.attend-row { margin-bottom: 12px; }
+.attend-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+.attend-bar { height: 6px; background: var(--cream-dark); border-radius: 3px; overflow: hidden; }
+.attend-fill { height: 100%; border-radius: 3px; background: var(--teal); transition: width 1s ease; }
+
+/* Announce list */
+.announce-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.announce-item:last-child { border-bottom: none; }
+.announce-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.announce-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+.announce-meta { font-size: 12px; color: var(--ink-muted); font-family: var(--font-mono); }
+
+/* ═══════════════════════════════════════════════
+   ████  PAGE 5: EVENTS  ████
+═══════════════════════════════════════════════ */
+.events-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.ev-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition);
+}
+.ev-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--border-gold); }
+.ev-card-header {
+  padding: 20px 24px;
+  background: var(--cream-dark);
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.ev-card-body { padding: 20px 24px; }
+.ev-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.ev-desc { font-size: 13.5px; color: var(--ink-muted); line-height: 1.65; margin-bottom: 16px; }
+.ev-meta-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.ev-meta { font-size: 12.5px; color: var(--ink-muted); display: flex; align-items: center; gap: 5px; }
+
+/* Calendar */
+.calendar-widget {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+}
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.cal-month { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; color: var(--ink); }
+.cal-nav { display: flex; gap: 6px; }
+.cal-btn { width: 28px; height: 28px; border-radius: 7px; background: var(--cream-dark); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--ink-muted); transition: background var(--transition); cursor: pointer; }
+.cal-btn:hover { background: var(--gold-light); color: var(--ink); }
+.cal-days-header { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 8px; }
+.cal-day-name { text-align: center; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--ink-muted); padding: 6px 0; }
+.cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal-day {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+.cal-day:hover { background: var(--cream-dark); }
+.cal-day.today { background: var(--ink); color: var(--cream); font-weight: 500; }
+.cal-day.has-event { background: var(--gold-pale); color: var(--ink); font-weight: 500; }
+.cal-day.has-event::after { content: ''; display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--gold); position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); }
+.cal-day { position: relative; }
+.cal-day.other-month { color: var(--ink-muted); opacity: 0.4; }
+
+/* ═══════════════════════════════════════════════
+   ████  PAGE 6: ANNOUNCEMENTS  ████
+═══════════════════════════════════════════════ */
+.search-bar-wrap {
+  position: relative; margin-bottom: 16px;
+}
+.search-bar {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search-bar:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.1); }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-muted); font-size: 16px; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.filter-chip {
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+  background: var(--card-bg);
+}
+.filter-chip:hover, .filter-chip.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+.blog-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 16px;
+  display: flex; gap: 24px;
+  align-items: flex-start;
+  transition: all var(--transition);
+}
+.blog-card:hover { transform: translateX(4px); box-shadow: var(--shadow-card); border-color: var(--border-gold); }
+.blog-card-date {
+  flex-shrink: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  min-width: 44px;
+}
+.blog-card-day { font-family: var(--font-display); font-size: 1.8rem; font-weight: 600; color: var(--ink); display: block; line-height: 1; margin-bottom: 2px; }
+.blog-divider { width: 1px; background: var(--border); flex-shrink: 0; align-self: stretch; }
+.blog-content { flex: 1; }
+.blog-cat { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.blog-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; line-height: 1.3; }
+.blog-excerpt { font-size: 13.5px; color: var(--ink-muted); line-height: 1.65; }
+
+/* ═══════════════════════════════════════════════
+   ████  PAGE 7: CONTACT  ████
+═══════════════════════════════════════════════ */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 48px;
+  align-items: start;
+}
+.contact-info-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  margin-bottom: 28px;
+}
+.contact-icon {
+  width: 44px; height: 44px;
+  background: var(--gold-pale);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.contact-label { font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-muted); margin-bottom: 4px; }
+.contact-value { font-size: 15px; color: var(--ink); font-weight: 500; }
+.contact-value-sub { font-size: 13px; color: var(--ink-muted); }
+
+.map-placeholder {
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  height: 220px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-top: 28px;
+  overflow: hidden;
+  position: relative;
+}
+.map-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.map-pin-label {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 12.5px;
+  font-weight: 500;
+  z-index: 1;
+  position: relative;
+}
+
+.social-row { display: flex; gap: 10px; margin-top: 28px; }
+.social-btn {
+  width: 42px; height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: var(--ink-muted);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.social-btn:hover { background: var(--ink); color: var(--cream); border-color: var(--ink); transform: translateY(-2px); }
+
+/* Contact form card */
+.contact-form-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+}
+.textarea-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 110px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.textarea-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  background: var(--ink);
+  color: #F0EBE3;
+  padding: 64px 0 32px;
+}
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+.footer-brand { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; }
+.footer-tagline { font-size: 13.5px; color: rgba(240,235,227,0.45); line-height: 1.65; max-width: 220px; }
+.footer-col-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(240,235,227,0.35); margin-bottom: 16px; }
+.footer-link { display: block; font-size: 13.5px; color: rgba(240,235,227,0.6); margin-bottom: 10px; cursor: pointer; transition: color var(--transition); }
+.footer-link:hover { color: #F0EBE3; }
+.footer-bottom { border-top: 1px solid rgba(240,235,227,0.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+.footer-copy { font-size: 12.5px; color: rgba(240,235,227,0.3); font-family: var(--font-mono); }
+.footer-tagline-bottom { font-size: 12.5px; color: rgba(240,235,227,0.3); }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .hero-right { display: none; }
+  .hero-headline { font-size: clamp(2.4rem, 5vw, 3.5rem); }
+  .mission-grid { grid-template-columns: 1fr; }
+  .mission-pane:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  .dashboard-wrap { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .portal-login-wrap { grid-template-columns: 1fr; }
+  .portal-left { display: none; }
+}
+@media (max-width: 768px) {
+  .container, .container-sm { padding: 0 20px; }
+  .section { padding: 64px 0; }
+  .grid-2, .grid-3, .grid-4, .events-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 24px; flex-wrap: wrap; }
+  .mission-pane { padding: 36px 28px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .event-card-large { flex-direction: column; gap: 16px; }
+  .blog-card { flex-direction: column; gap: 16px; }
+  .blog-divider { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOADING SCREEN ═══════════ -->
+<div id="loader">
+  <div class="loader-wordmark">Lumina</div>
+  <div class="loader-bar"></div>
+</div>
+
+<!-- ═══════════ TOAST CONTAINER ═══════════ -->
+<div id="toast-container"></div>
+
+<!-- ═══════════ MODAL ═══════════ -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════ NAVBAR ═══════════ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="navigate('home')" style="cursor:pointer;">
+      <div class="nav-logo-mark">L</div>
+      <span>Lumina Academy</span>
+    </div>
+    <div class="nav-links">
+      <span class="nav-link active" data-page="home" onclick="navigate('home')">Home</span>
+      <span class="nav-link" data-page="about" onclick="navigate('about')">About</span>
+      <span class="nav-link" data-page="events" onclick="navigate('events')">Events</span>
+      <span class="nav-link" data-page="announcements" onclick="navigate('announcements')">News</span>
+      <span class="nav-link" data-page="contact" onclick="navigate('contact')">Contact</span>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀</button>
+      <button class="btn-portal btn" onclick="navigate('login')">Student Portal</button>
+      <button class="hamburger" onclick="toggleMobile()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <span class="nav-link" onclick="navigate('home');toggleMobile()">Home</span>
+  <span class="nav-link" onclick="navigate('about');toggleMobile()">About</span>
+  <span class="nav-link" onclick="navigate('events');toggleMobile()">Events</span>
+  <span class="nav-link" onclick="navigate('announcements');toggleMobile()">News</span>
+  <span class="nav-link" onclick="navigate('contact');toggleMobile()">Contact</span>
+  <span class="nav-link" onclick="navigate('login');toggleMobile()">Student Portal</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: HOME
+═══════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-texture"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        S.Y. 2024–2025 · Now Enrolling
+      </div>
+      <h1 class="hero-headline">
+        Where <em>learning</em><br>meets community
+      </h1>
+      <p class="hero-desc">
+        Lumina Academy Student Organization — fostering excellence, leadership, and lasting connections for every student.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="navigate('login')">
+          Access Portal
+          <span>→</span>
+        </button>
+        <button class="btn btn-outline" onclick="navigate('about')">Learn More</button>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <span class="stat-num">1,240</span>
+          <span class="stat-label">Active Students</span>
+        </div>
+        <div>
+          <span class="stat-num">48</span>
+          <span class="stat-label">Faculty Members</span>
+        </div>
+        <div>
+          <span class="stat-num">32</span>
+          <span class="stat-label">Organizations</span>
+        </div>
+        <div>
+          <span class="stat-num">96%</span>
+          <span class="stat-label">Graduation Rate</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card-float">
+        <div style="font-size:11px;font-family:var(--font-mono);color:var(--ink-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;">Recent Portal Activity</div>
+        <div class="hero-card-mini" style="margin-bottom:10px;">
+          <div class="hero-avatar">AS</div>
+          <div><div style="font-size:13px;font-weight:500;color:var(--ink)">Anna Santos</div><div style="font-size:11.5px;color:var(--ink-muted)">Submitted Lab Report</div></div>
+        </div>
+        <div class="hero-card-mini">
+          <div class="hero-avatar" style="background:var(--teal-light);color:var(--teal)">MR</div>
+          <div><div style="font-size:13px;font-weight:500;color:var(--ink)">Miguel Reyes</div><div style="font-size:11.5px;color:var(--ink-muted)">Viewed Grades</div></div>
+        </div>
+      </div>
+      <div class="event-chip">
+        <div class="event-chip-date">
+          <span style="font-size:16px;font-weight:600;display:block;font-family:var(--font-display);color:#fff">24</span>
+          <span>JAN</span>
+        </div>
+        <div>
+          <div style="font-size:13.5px;font-weight:500;color:var(--teal)">Foundation Day</div>
+          <div style="font-size:12px;color:var(--ink-muted)">Main Auditorium, 9 AM</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="announce-strip">
+    <div class="announce-ticker">
+      <span class="ticker-item"><span class="ticker-dot"></span> Enrollment for S.Y. 2025–2026 is now open</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Foundation Day Celebration — January 24, 2025</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> New library resources available on the portal</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Student Leadership Summit registrations closing soon</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Enrollment for S.Y. 2025–2026 is now open</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Foundation Day Celebration — January 24, 2025</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> New library resources available on the portal</span>
+      <span class="ticker-item"><span class="ticker-dot"></span> Student Leadership Summit registrations closing soon</span>
+    </div>
+  </div>
+
+  <!-- MISSION / VISION -->
+  <section class="section">
+    <div class="container">
+      <div class="mission-grid reveal">
+        <div class="mission-pane">
+          <div class="section-label">Our Mission</div>
+          <div class="mission-pane-title">Empowering every student to lead and excel</div>
+          <p class="mission-pane-body">We are committed to providing a nurturing academic environment that cultivates critical thinking, creative expression, and genuine care for our community. Every student deserves a champion.</p>
+        </div>
+        <div class="mission-pane">
+          <div class="section-label">Our Vision</div>
+          <div class="mission-pane-title">A generation of principled, inspired leaders</div>
+          <p class="mission-pane-body">Lumina Academy envisions a school where curiosity is celebrated, diversity is embraced, and every graduate leaves equipped to make a meaningful impact in the world they inherit.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWS -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="flex-between" style="margin-bottom:36px;">
+        <div>
+          <div class="section-label reveal">Latest News</div>
+          <h2 class="section-title reveal delay-1">What's happening<br>at Lumina</h2>
+        </div>
+        <button class="btn btn-ghost reveal delay-2" onclick="navigate('announcements')">View all →</button>
+      </div>
+      <div class="grid-3">
+        <div class="news-card reveal delay-1">
+          <div class="news-img">
+            <div class="news-img-pattern"></div>
+            <span>🏆</span>
+          </div>
+          <div class="news-content">
+            <div class="news-meta"><span class="badge badge-gold">Achievement</span><span>Jan 18, 2025</span></div>
+            <div class="news-title">Lumina wins Regional Science Olympiad</div>
+            <p class="news-excerpt">Our science team claimed first place in the regional competition, advancing to the national stage this March.</p>
+          </div>
+        </div>
+        <div class="news-card reveal delay-2">
+          <div class="news-img">
+            <div class="news-img-pattern"></div>
+            <span>📚</span>
+          </div>
+          <div class="news-content">
+            <div class="news-meta"><span class="badge badge-teal">Academic</span><span>Jan 14, 2025</span></div>
+            <div class="news-title">New elective courses for second semester</div>
+            <p class="news-excerpt">Exciting new offerings in data science, creative writing, and entrepreneurship begin enrollment next week.</p>
+          </div>
+        </div>
+        <div class="news-card reveal delay-3">
+          <div class="news-img">
+            <div class="news-img-pattern"></div>
+            <span>🤝</span>
+          </div>
+          <div class="news-content">
+            <div class="news-meta"><span class="badge badge-neutral">Community</span><span>Jan 10, 2025</span></div>
+            <div class="news-title">Community outreach program launches citywide</div>
+            <p class="news-excerpt">Student volunteers are partnering with three barangays to deliver free tutoring and school supplies.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED EVENTS -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="section-label reveal">Upcoming Events</div>
+      <h2 class="section-title reveal delay-1">Mark your calendar</h2>
+      <div style="display:flex;flex-direction:column;gap:16px;margin-top:28px;">
+        <div class="event-card-large reveal">
+          <div class="event-date-block">
+            <span class="event-date-day">24</span>
+            <span class="event-date-month">Jan</span>
+          </div>
+          <div style="flex:1;">
+            <div class="event-card-title">Foundation Day & Alumni Homecoming 2025</div>
+            <div class="event-detail">📍 Main Auditorium & Covered Courts</div>
+            <div class="event-detail" style="margin-bottom:14px;">⏰ 8:00 AM – 6:00 PM</div>
+            <div class="tag-row">
+              <span class="badge badge-gold">All Students</span>
+              <span class="badge badge-teal">Faculty</span>
+              <span class="badge badge-neutral">Alumni</span>
+            </div>
+          </div>
+          <button class="btn btn-outline" onclick="showToast('Registered for Foundation Day!','success')">Register</button>
+        </div>
+        <div class="event-card-large reveal delay-1">
+          <div class="event-date-block" style="background:var(--teal)">
+            <span class="event-date-day">31</span>
+            <span class="event-date-month">Jan</span>
+          </div>
+          <div style="flex:1;">
+            <div class="event-card-title">Student Leadership Summit 2025</div>
+            <div class="event-detail">📍 Conference Hall B</div>
+            <div class="event-detail" style="margin-bottom:14px;">⏰ 9:00 AM – 4:00 PM</div>
+            <div class="tag-row">
+              <span class="badge badge-teal">Leaders</span>
+              <span class="badge badge-neutral">Officers</span>
+            </div>
+          </div>
+          <button class="btn btn-outline" onclick="showToast('Registered for Leadership Summit!','success')">Register</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:28px;">
+        <button class="btn btn-ghost" onclick="navigate('events')">View full events calendar →</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">Lumina Academy</div>
+          <div class="footer-tagline">Fostering excellence, leadership, and community since 1985.</div>
+        </div>
+        <div>
+          <div class="footer-col-title">Navigate</div>
+          <span class="footer-link" onclick="navigate('home')">Home</span>
+          <span class="footer-link" onclick="navigate('about')">About</span>
+          <span class="footer-link" onclick="navigate('events')">Events</span>
+        </div>
+        <div>
+          <div class="footer-col-title">Portal</div>
+          <span class="footer-link" onclick="navigate('login')">Student Login</span>
+          <span class="footer-link" onclick="navigate('dashboard')">Dashboard</span>
+          <span class="footer-link">Grades</span>
+        </div>
+        <div>
+          <div class="footer-col-title">Connect</div>
+          <span class="footer-link" onclick="navigate('contact')">Contact Us</span>
+          <span class="footer-link" onclick="navigate('announcements')">News</span>
+          <span class="footer-link">Helpdesk</span>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-copy">© 2025 Lumina Academy · All rights reserved</div>
+        <div class="footer-tagline-bottom">Made with care for students</div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: ABOUT
+═══════════════════════════════════════════════ -->
+<div id="page-about" class="page">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label reveal">Our Story</div>
+      <h1 class="page-hero-title reveal delay-1">Built by students,<br>for students</h1>
+      <p class="page-hero-sub reveal delay-2">Since 1985, Lumina Academy has been a place where every student finds their voice, their peers, and their purpose.</p>
+    </div>
+  </div>
+
+  <!-- Officers -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label reveal">Leadership</div>
+      <h2 class="section-title reveal delay-1">Student Officers 2024–2025</h2>
+      <div class="grid-4" style="margin-top:28px;">
+        <div class="officer-card reveal delay-1">
+          <div class="officer-avatar">AP</div>
+          <div class="officer-name">Andrea Patricio</div>
+          <div class="officer-role">President</div>
+          <div class="officer-dept">BS Computer Science</div>
+        </div>
+        <div class="officer-card reveal delay-2">
+          <div class="officer-avatar" style="background:var(--teal-light);color:var(--teal)">KL</div>
+          <div class="officer-name">Kyle Lim</div>
+          <div class="officer-role">Vice President</div>
+          <div class="officer-dept">BS Accountancy</div>
+        </div>
+        <div class="officer-card reveal delay-3">
+          <div class="officer-avatar" style="background:rgba(196,75,58,0.1);color:var(--red-accent)">MV</div>
+          <div class="officer-name">Maria Vicente</div>
+          <div class="officer-role">Secretary</div>
+          <div class="officer-dept">BS Psychology</div>
+        </div>
+        <div class="officer-card reveal delay-4">
+          <div class="officer-avatar" style="background:var(--cream-dark)">JR</div>
+          <div class="officer-name">James Reyes</div>
+          <div class="officer-role">Treasurer</div>
+          <div class="officer-dept">BS Business Admin</div>
+        </div>
+        <div class="officer-card reveal delay-1">
+          <div class="officer-avatar" style="background:rgba(42,107,107,0.1);color:var(--teal)">SC</div>
+          <div class="officer-name">Sofia Cruz</div>
+          <div class="officer-role">Auditor</div>
+          <div class="officer-dept">BS Accounting Tech</div>
+        </div>
+        <div class="officer-card reveal delay-2">
+          <div class="officer-avatar" style="background:var(--gold-pale)">BT</div>
+          <div class="officer-name">Benj Torres</div>
+          <div class="officer-role">PRO</div>
+          <div class="officer-dept">AB Communication</div>
+        </div>
+        <div class="officer-card reveal delay-3">
+          <div class="officer-avatar">NG</div>
+          <div class="officer-name">Nina Garcia</div>
+          <div class="officer-role">Events Officer</div>
+          <div class="officer-dept">BS Tourism</div>
+        </div>
+        <div class="officer-card reveal delay-4">
+          <div class="officer-avatar" style="background:rgba(196,75,58,0.08);color:var(--red-accent)">DM</div>
+          <div class="officer-name">Diego Mendoza</div>
+          <div class="officer-role">Sports Director</div>
+          <div class="officer-dept">BS Physical Ed</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- History -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="grid-2" style="gap:64px;align-items:start;">
+        <div>
+          <div class="section-label reveal">Our History</div>
+          <h2 class="section-title reveal delay-1">Four decades of excellence</h2>
+          <div class="timeline" style="margin-top:32px;">
+            <div class="timeline-item reveal">
+              <div class="timeline-year">1985</div>
+              <div class="timeline-title">Founding of Lumina Academy</div>
+              <div class="timeline-text">Established by the Lumina Foundation with 120 founding students across three departments.</div>
+            </div>
+            <div class="timeline-item reveal delay-1">
+              <div class="timeline-year">1995</div>
+              <div class="timeline-title">First Regional Championship</div>
+              <div class="timeline-text">Debate and Science teams win back-to-back regional titles, establishing Lumina's academic reputation.</div>
+            </div>
+            <div class="timeline-item reveal delay-2">
+              <div class="timeline-year">2008</div>
+              <div class="timeline-title">Campus Expansion</div>
+              <div class="timeline-text">New main building, covered courts, and library wing open — capacity doubles to over 1,000 students.</div>
+            </div>
+            <div class="timeline-item reveal delay-3">
+              <div class="timeline-year">2019</div>
+              <div class="timeline-title">Digital Transformation</div>
+              <div class="timeline-text">Launch of the Student Portal and Learning Management System, modernizing student services.</div>
+            </div>
+            <div class="timeline-item reveal delay-4">
+              <div class="timeline-year">2024</div>
+              <div class="timeline-title">National Excellence Award</div>
+              <div class="timeline-text">Recognized as one of the top 10 performing school organizations in the national convention.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-label reveal">Achievements</div>
+          <h2 class="section-title reveal delay-1">Awards & recognition</h2>
+          <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px;">
+            <div class="achieve-card reveal delay-1">
+              <div class="achieve-icon">🏆</div>
+              <div><div style="font-weight:600;font-size:14px;color:var(--ink);margin-bottom:3px;">National Academic Excellence Award 2024</div><div style="font-size:13px;color:var(--ink-muted)">Commission on Higher Education</div></div>
+            </div>
+            <div class="achieve-card reveal delay-2">
+              <div class="achieve-icon">🔬</div>
+              <div><div style="font-weight:600;font-size:14px;color:var(--ink);margin-bottom:3px;">Regional Science Olympiad Champions</div><div style="font-size:13px;color:var(--ink-muted)">4 consecutive years · 2021–2024</div></div>
+            </div>
+            <div class="achieve-card reveal delay-3">
+              <div class="achieve-icon">💬</div>
+              <div><div style="font-weight:600;font-size:14px;color:var(--ink);margin-bottom:3px;">Best Student Publication</div><div style="font-size:13px;color:var(--ink-muted)">The Luminary — National Press Corps</div></div>
+            </div>
+            <div class="achieve-card reveal delay-4">
+              <div class="achieve-icon">🌱</div>
+              <div><div style="font-weight:600;font-size:14px;color:var(--ink);margin-bottom:3px;">Greenest Campus Initiative 2023</div><div style="font-size:13px;color:var(--ink-muted)">Department of Education Recognition</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:0;">
+        <div class="footer-copy">© 2025 Lumina Academy · Student Organization</div>
+        <button class="btn btn-ghost" style="color:rgba(240,235,227,0.5)" onclick="navigate('home')">← Back to Home</button>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: LOGIN
+═══════════════════════════════════════════════ -->
+<div id="page-login" class="page">
+  <div class="portal-login-wrap">
+    <div class="portal-left">
+      <div class="portal-left-bg"></div>
+      <div class="portal-left-content">
+        <div class="portal-brand">Lumina Portal</div>
+        <div class="portal-brand-sub">Student Information System</div>
+        <div class="portal-quote">"Education is the most powerful weapon which you can use to change the world."</div>
+        <div class="portal-quote-attr">— Nelson Mandela</div>
+      </div>
+      <div style="position:relative;z-index:1;">
+        <div style="font-size:12px;color:rgba(240,235,227,0.25);font-family:var(--font-mono);letter-spacing:.06em;">LUMINA ACADEMY · EST. 1985</div>
+      </div>
+    </div>
+    <div class="portal-right">
+      <div class="portal-form-wrap">
+        <div class="portal-form-title">Welcome back</div>
+        <div class="portal-form-sub">Sign in to your student portal account</div>
+
+        <div class="role-selector" id="roleSelector">
+          <div class="role-opt selected" onclick="selectRole(this)" data-role="student">
+            <div class="role-opt-icon">🎓</div>Student
+          </div>
+          <div class="role-opt" onclick="selectRole(this)" data-role="faculty">
+            <div class="role-opt-icon">👩‍🏫</div>Faculty
+          </div>
+          <div class="role-opt" onclick="selectRole(this)" data-role="admin">
+            <div class="role-opt-icon">⚙️</div>Admin
+          </div>
+        </div>
+
+        <div class="demo-hint">
+          <strong>Demo access:</strong> Use any username & password to log in as a student.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Student ID / Username</label>
+          <input class="form-input" type="text" id="loginUser" placeholder="e.g. 2024-00123" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;justify-content:space-between;">
+            Password
+            <span style="color:var(--gold);cursor:pointer;font-weight:400" onclick="showToast('Password reset link sent to your email','info')">Forgot password?</span>
+          </label>
+          <input class="form-input" type="password" id="loginPass" placeholder="Enter your password" />
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;margin-top:8px;" onclick="doLogin()">
+          Sign In →
+        </button>
+        <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--ink-muted);">
+          Need help? <span style="color:var(--gold);cursor:pointer" onclick="navigate('contact')">Contact support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: DASHBOARD
+═══════════════════════════════════════════════ -->
+<div id="page-dashboard" class="page">
+  <div class="dashboard-wrap">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">AS</div>
+        <div>
+          <div class="sidebar-name">Anna Santos</div>
+          <div class="sidebar-id">2024-00123</div>
+        </div>
+      </div>
+      <div class="sidebar-label">Main</div>
+      <div class="sidebar-nav-item active" onclick="switchDash('overview',this)"><span class="nav-icon">◈</span> Overview</div>
+      <div class="sidebar-nav-item" onclick="switchDash('subjects',this)"><span class="nav-icon">📗</span> Subjects</div>
+      <div class="sidebar-nav-item" onclick="switchDash('grades',this)"><span class="nav-icon">📊</span> Grades</div>
+      <div class="sidebar-nav-item" onclick="switchDash('attendance',this)"><span class="nav-icon">📅</span> Attendance</div>
+      <div class="sidebar-label">Campus</div>
+      <div class="sidebar-nav-item" onclick="switchDash('announcements',this)"><span class="nav-icon">📢</span> Announcements</div>
+      <div class="sidebar-nav-item" onclick="switchDash('events',this)"><span class="nav-icon">🗓</span> Events</div>
+      <div class="sidebar-bottom">
+        <div class="sidebar-nav-item" onclick="navigate('home');showToast('Signed out successfully','info')"><span class="nav-icon">⎋</span> Sign Out</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;margin-top:4px;">
+          <span style="font-size:13px;color:var(--ink-muted)">Dark mode</span>
+          <button style="width:36px;height:20px;border-radius:10px;background:var(--cream-dark);border:1px solid var(--border);cursor:pointer;position:relative;transition:background var(--transition)" id="dmToggle" onclick="toggleTheme()">
+            <span id="dmKnob" style="position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:var(--ink-muted);transition:transform var(--transition)"></span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-main">
+
+      <!-- Overview -->
+      <div id="dash-overview">
+        <div class="dash-header">
+          <div class="dash-welcome">Good morning, Anna ✦</div>
+          <div class="dash-date">Wednesday, January 22, 2025 · 2nd Semester</div>
+        </div>
+        <div class="grid-4" style="margin-bottom:28px;">
+          <div class="stat-card">
+            <div class="stat-card-label">GPA</div>
+            <div class="stat-card-value">1.75</div>
+            <div class="stat-card-trend trend-up">↑ +0.10 this sem</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Attendance</div>
+            <div class="stat-card-value">94%</div>
+            <div class="stat-card-trend trend-neutral">4 absences</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Subjects</div>
+            <div class="stat-card-value">6</div>
+            <div class="stat-card-sub">Enrolled this sem</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Units</div>
+            <div class="stat-card-value">21</div>
+            <div class="stat-card-sub">of 24 required</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap:20px;">
+          <div class="card" style="padding:24px;">
+            <div class="dash-section-title">Upcoming Events</div>
+            <div class="announce-item">
+              <div class="announce-dot" style="background:var(--teal)"></div>
+              <div><div class="announce-title">Foundation Day</div><div class="announce-meta">JAN 24 · Auditorium</div></div>
+            </div>
+            <div class="announce-item">
+              <div class="announce-dot" style="background:var(--gold)"></div>
+              <div><div class="announce-title">Leadership Summit</div><div class="announce-meta">JAN 31 · Conf. Hall</div></div>
+            </div>
+            <div class="announce-item">
+              <div class="announce-dot"></div>
+              <div><div class="announce-title">Science Fair</div><div class="announce-meta">FEB 8 · Gymnasium</div></div>
+            </div>
+          </div>
+          <div class="card" style="padding:24px;">
+            <div class="dash-section-title">Announcements</div>
+            <div class="announce-item">
+              <div class="announce-dot"></div>
+              <div><div class="announce-title">Mid-term exams schedule released</div><div class="announce-meta">Posted by Registrar · Jan 20</div></div>
+            </div>
+            <div class="announce-item">
+              <div class="announce-dot"></div>
+              <div><div class="announce-title">Library hours extended until 9 PM</div><div class="announce-meta">Posted by Library · Jan 18</div></div>
+            </div>
+            <div class="announce-item">
+              <div class="announce-dot"></div>
+              <div><div class="announce-title">Scholarship application deadline Feb 1</div><div class="announce-meta">Posted by Finance · Jan 15</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subjects -->
+      <div id="dash-subjects" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-welcome">My Subjects</div>
+          <div class="dash-date">2nd Semester · S.Y. 2024–2025</div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="subject-table">
+            <thead>
+              <tr>
+                <th>Subject</th><th>Units</th><th>Instructor</th><th>Schedule</th><th>Room</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="subjectTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Grades -->
+      <div id="dash-grades" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-welcome">Grade Report</div>
+          <div class="dash-date">2nd Semester · S.Y. 2024–2025</div>
+        </div>
+        <div class="grid-2" style="gap:20px;margin-bottom:24px;">
+          <div class="card" style="padding:24px;">
+            <div class="dash-section-title">Current GPA</div>
+            <div style="font-family:var(--font-display);font-size:3.5rem;font-weight:600;color:var(--ink);line-height:1">1.75</div>
+            <div style="font-size:13px;color:var(--ink-muted);margin-top:8px;">Latin Honors track · Cum Laude (≤ 1.75)</div>
+          </div>
+          <div class="card" style="padding:24px;">
+            <div class="dash-section-title">Grade Distribution</div>
+            <div id="gradeDist"></div>
+          </div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="subject-table">
+            <thead><tr><th>Subject</th><th>Midterm</th><th>Finals</th><th>Final Grade</th><th>Equivalent</th><th>Remarks</th></tr></thead>
+            <tbody id="gradeTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Attendance -->
+      <div id="dash-attendance" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-welcome">Attendance Record</div>
+          <div class="dash-date">2nd Semester · S.Y. 2024–2025</div>
+        </div>
+        <div class="grid-2" style="gap:20px;margin-bottom:24px;">
+          <div class="card" style="padding:24px;">
+            <div class="stat-card-label">Overall Attendance Rate</div>
+            <div style="font-family:var(--font-display);font-size:3rem;font-weight:600;color:var(--ink)">94%</div>
+            <div style="font-size:13px;color:var(--ink-muted);margin-top:6px;">47 of 50 classes attended · 3 absences remaining</div>
+          </div>
+          <div class="card" style="padding:24px;">
+            <div class="dash-section-title">Per Subject</div>
+            <div id="attendanceBars"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dash Announcements -->
+      <div id="dash-announcements" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-welcome">Announcements</div>
+          <div class="dash-date">School Notices & Updates</div>
+        </div>
+        <div id="dashAnnounceList"></div>
+      </div>
+
+      <!-- Dash Events -->
+      <div id="dash-events" style="display:none;">
+        <div class="dash-header">
+          <div class="dash-welcome">Upcoming Events</div>
+          <div class="dash-date">January – February 2025</div>
+        </div>
+        <div id="dashEventsList"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: EVENTS
+═══════════════════════════════════════════════ -->
+<div id="page-events" class="page">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label reveal">Calendar</div>
+      <h1 class="page-hero-title reveal delay-1">Events & Activities</h1>
+      <p class="page-hero-sub reveal delay-2">Stay connected with everything happening at Lumina Academy this semester.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid-2" style="gap:40px;align-items:start;">
+        <div>
+          <div class="dash-section-title reveal" style="font-size:1.1rem;margin-bottom:20px;">Events this semester</div>
+          <div class="events-grid" id="eventsGrid"></div>
+        </div>
+        <div class="reveal delay-2">
+          <div class="dash-section-title" style="font-size:1.1rem;margin-bottom:20px;">Calendar — January 2025</div>
+          <div class="calendar-widget">
+            <div class="cal-header">
+              <div class="cal-month">January 2025</div>
+              <div class="cal-nav">
+                <div class="cal-btn">‹</div>
+                <div class="cal-btn">›</div>
+              </div>
+            </div>
+            <div class="cal-days-header">
+              <div class="cal-day-name">SUN</div><div class="cal-day-name">MON</div>
+              <div class="cal-day-name">TUE</div><div class="cal-day-name">WED</div>
+              <div class="cal-day-name">THU</div><div class="cal-day-name">FRI</div>
+              <div class="cal-day-name">SAT</div>
+            </div>
+            <div class="cal-days" id="calDays"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: ANNOUNCEMENTS
+═══════════════════════════════════════════════ -->
+<div id="page-announcements" class="page">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label reveal">News & Updates</div>
+      <h1 class="page-hero-title reveal delay-1">Announcements</h1>
+      <p class="page-hero-sub reveal delay-2">All school notices, academic updates, and community news in one place.</p>
+    </div>
+  </div>
+  <section class="section">
+    <div class="container" style="max-width:820px;">
+      <div class="search-bar-wrap reveal">
+        <span class="search-icon">⌕</span>
+        <input class="search-bar" type="text" id="announceSearch" placeholder="Search announcements..." oninput="filterAnnouncements()" />
+      </div>
+      <div class="filter-row reveal delay-1" id="filterRow">
+        <div class="filter-chip active" onclick="filterByCategory('all',this)">All</div>
+        <div class="filter-chip" onclick="filterByCategory('academic',this)">Academic</div>
+        <div class="filter-chip" onclick="filterByCategory('events',this)">Events</div>
+        <div class="filter-chip" onclick="filterByCategory('finance',this)">Finance</div>
+        <div class="filter-chip" onclick="filterByCategory('campus',this)">Campus Life</div>
+      </div>
+      <div id="blogList"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: CONTACT
+═══════════════════════════════════════════════ -->
+<div id="page-contact" class="page">
+  <div class="page-hero">
+    <div class="container">
+      <div class="section-label reveal">Get in Touch</div>
+      <h1 class="page-hero-title reveal delay-1">Contact Us</h1>
+      <p class="page-hero-sub reveal delay-2">Have a question or need support? We're here to help every student thrive.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="reveal">
+          <h3 style="font-family:var(--font-display);font-size:1.6rem;font-weight:600;color:var(--ink);margin-bottom:28px;">Let's connect</h3>
+          <div class="contact-info-item">
+            <div class="contact-icon">📍</div>
+            <div>
+              <div class="contact-label">Address</div>
+              <div class="contact-value">123 Lumina Boulevard</div>
+              <div class="contact-value-sub">Quezon City, Metro Manila 1100</div>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-icon">📞</div>
+            <div>
+              <div class="contact-label">Phone</div>
+              <div class="contact-value">(02) 8888-1985</div>
+              <div class="contact-value-sub">Mon–Fri, 7 AM – 5 PM</div>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-icon">✉</div>
+            <div>
+              <div class="contact-label">Email</div>
+              <div class="contact-value">info@lumina.edu.ph</div>
+              <div class="contact-value-sub">student.affairs@lumina.edu.ph</div>
+            </div>
+          </div>
+          <div class="social-row">
+            <div class="social-btn" title="Facebook" onclick="showToast('Opening Facebook page','info')">f</div>
+            <div class="social-btn" title="Twitter">𝕏</div>
+            <div class="social-btn" title="Instagram" onclick="showToast('Follow us @luminaacademy','info')">◎</div>
+            <div class="social-btn" title="YouTube">▶</div>
+          </div>
+          <div class="map-placeholder" style="margin-top:28px;">
+            <div class="map-grid"></div>
+            <div class="map-pin-label">📍 Lumina Academy, QC</div>
+          </div>
+        </div>
+
+        <div class="contact-form-card reveal delay-2">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:600;color:var(--ink);margin-bottom:24px;">Send a message</div>
+          <div class="grid-2" style="gap:14px;">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input class="form-input" type="text" placeholder="Ana" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input class="form-input" type="text" placeholder="Santos" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input class="form-input" type="email" placeholder="ana.santos@email.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department / Role</label>
+            <select class="form-input">
+              <option>Student</option>
+              <option>Faculty</option>
+              <option>Parent / Guardian</option>
+              <option>Alumni</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input class="form-input" type="text" placeholder="How can we help?" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="textarea-input" placeholder="Write your message here..."></textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;" onclick="showToast('Message sent! We\'ll respond within 24 hours.','success')">
+            Send Message →
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none;padding-top:0;">
+        <div class="footer-copy">© 2025 Lumina Academy</div>
+        <button class="btn btn-ghost" style="color:rgba(240,235,227,0.5)" onclick="navigate('home')">← Back to Home</button>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════ -->
+<script>
+/* ─── MOCK DATA ─────────────────────────────── */
+const SUBJECTS = [
+  { code:'CS 301', name:'Data Structures & Algorithms', units:3, instructor:'Prof. Aquino', sched:'MWF 7:30–9:00', room:'CS Lab 1', status:'enrolled' },
+  { code:'CS 302', name:'Object-Oriented Programming', units:3, instructor:'Prof. Dela Cruz', sched:'TTh 9:00–10:30', room:'CS Lab 2', status:'enrolled' },
+  { code:'MATH 201', name:'Discrete Mathematics', units:3, instructor:'Prof. Soriano', sched:'MWF 10:30–12:00', room:'Rm 204', status:'enrolled' },
+  { code:'ENG 101', name:'Technical Writing', units:3, instructor:'Prof. Villanueva', sched:'TTh 1:00–2:30', room:'Rm 108', status:'enrolled' },
+  { code:'HUM 103', name:'Philippine Literature', units:3, instructor:'Prof. Ramos', sched:'MWF 1:00–2:30', room:'Rm 301', status:'enrolled' },
+  { code:'PE 201', name:'Physical Fitness & Wellness', units:2, instructor:'Prof. Macaraeg', sched:'Thu 3:00–5:00', room:'Gymnasium', status:'enrolled' },
+];
+
+const GRADES = [
+  { code:'CS 301', name:'Data Structures & Algorithms', midterm:91, finals:88, grade:1.5, equiv:'Excellent' },
+  { code:'CS 302', name:'Object-Oriented Programming', midterm:85, finals:90, grade:1.75, equiv:'Very Good' },
+  { code:'MATH 201', name:'Discrete Mathematics', midterm:80, finals:84, grade:2.0, equiv:'Good' },
+  { code:'ENG 101', name:'Technical Writing', midterm:95, finals:93, grade:1.25, equiv:'Excellent' },
+  { code:'HUM 103', name:'Philippine Literature', midterm:82, finals:88, grade:1.75, equiv:'Very Good' },
+  { code:'PE 201', name:'Physical Fitness & Wellness', midterm:90, finals:92, grade:1.5, equiv:'Excellent' },
+];
+
+const ANNOUNCEMENTS = [
+  { id:1, cat:'academic', title:'Mid-term examination schedule released', excerpt:'The complete schedule for mid-term examinations from February 17–21 has been finalized. Please check individual department boards.', day:20, month:'JAN', tags:['Academic','Important'] },
+  { id:2, cat:'finance', title:'Scholarship application deadline — February 1', excerpt:'All undergraduate students are encouraged to apply for the 2025 academic scholarship. Requirements and forms available at the Finance Office.', day:18, month:'JAN', tags:['Finance','Deadline'] },
+  { id:3, cat:'campus', title:'Library hours extended to 9:00 PM', excerpt:'The Main Library will now be open until 9:00 PM Monday through Thursday effective January 20 to support students preparing for mid-terms.', day:17, month:'JAN', tags:['Campus Life'] },
+  { id:4, cat:'events', title:'Foundation Day and Alumni Homecoming 2025', excerpt:'Join us on January 24 for our 40th Foundation Day celebration featuring the annual alumni homecoming, cultural presentations, and recognition ceremonies.', day:15, month:'JAN', tags:['Events','All Students'] },
+  { id:5, cat:'academic', title:'New elective subjects open for enrollment — 2nd Semester', excerpt:'Data Science Fundamentals, Creative Entrepreneurship, and Creative Writing workshops are now available as elective subjects for the 2nd semester.', day:13, month:'JAN', tags:['Academic','Enrollment'] },
+  { id:6, cat:'campus', title:'Student canteen renovation complete — now open', excerpt:'The main student canteen has reopened after its two-month renovation. New food stalls, cashless payment options, and expanded seating are now available.', day:10, month:'JAN', tags:['Campus Life'] },
+];
+
+const EVENTS = [
+  { emoji:'🎉', title:'Foundation Day & Alumni Homecoming', date:'Jan 24', time:'8 AM – 6 PM', location:'Main Auditorium', desc:'Celebrate 40 years of Lumina with alumni, cultural shows, and recognition ceremonies.', tags:['All Students','Alumni'], color:'var(--gold-light)' },
+  { emoji:'🚀', title:'Student Leadership Summit', date:'Jan 31', time:'9 AM – 4 PM', location:'Conference Hall B', desc:'A day of talks, workshops, and networking for student leaders across all departments.', tags:['Leaders','Officers'], color:'var(--teal-light)' },
+  { emoji:'🔬', title:'Interschool Science Fair', date:'Feb 8', time:'9 AM – 5 PM', location:'Gymnasium', desc:'Annual science exhibition featuring research projects from all colleges competing for regional spots.', tags:['STEM','Competition'], color:'var(--cream-dark)' },
+  { emoji:'📖', title:'Book Fair & Reading Festival', date:'Feb 14', time:'10 AM – 6 PM', location:'Library Grounds', desc:'Browse hundreds of discounted titles, meet local authors, and join reading circles and workshops.', tags:['All Students','Library'], color:'var(--gold-pale)' },
+];
+
+const DASH_EVENTS = [
+  { title:'Foundation Day', date:'Jan 24', loc:'Auditorium', color:'var(--gold)' },
+  { title:'Leadership Summit', date:'Jan 31', loc:'Conf. Hall B', color:'var(--teal)' },
+  { title:'Science Fair', date:'Feb 8', loc:'Gymnasium', color:'var(--ink-muted)' },
+  { title:'Book Fair', date:'Feb 14', loc:'Library', color:'var(--red-accent)' },
+];
+
+/* ─── PAGE NAVIGATION ────────────────────────── */
+let currentPage = 'home';
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + page);
+  if (target) { target.classList.add('active'); currentPage = page; }
+
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.classList.toggle('active', l.dataset.page === page);
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setTimeout(initReveal, 100);
+
+  if (page === 'announcements') renderBlog();
+  if (page === 'events') { renderEvents(); renderCalendar(); }
+  if (page === 'dashboard') renderDashboard();
+}
+
+/* ─── LOADING ────────────────────────────────── */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+    initReveal();
+  }, 1600);
+});
+
+/* ─── NAVBAR SCROLL ──────────────────────────── */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+/* ─── MOBILE MENU ────────────────────────────── */
+let mobileOpen = false;
+function toggleMobile() {
+  mobileOpen = !mobileOpen;
+  document.getElementById('mobileMenu').classList.toggle('open', mobileOpen);
+}
+
+/* ─── THEME TOGGLE ───────────────────────────── */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.querySelector('.theme-toggle').textContent = isDark ? '☀' : '☾';
+  const knob = document.getElementById('dmKnob');
+  if (knob) knob.style.transform = isDark ? 'translateX(0)' : 'translateX(14px)';
+}
+
+/* ─── SCROLL REVEAL ──────────────────────────── */
+function initReveal() {
+  const els = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.1 });
+  els.forEach(el => obs.observe(el));
+}
+initReveal();
+
+/* ─── TOAST ──────────────────────────────────── */
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-icon">${type === 'success' ? '✓' : 'ℹ'}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  requestAnimationFrame(() => { requestAnimationFrame(() => toast.classList.add('show')); });
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+}
+
+/* ─── MODAL ──────────────────────────────────── */
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+/* ─── LOGIN ──────────────────────────────────── */
+function selectRole(el) {
+  document.querySelectorAll('.role-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function doLogin() {
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) { showToast('Please fill in all fields','info'); return; }
+  showToast('Signing in…','info');
+  setTimeout(() => { navigate('dashboard'); showToast('Welcome back, Anna Santos!','success'); }, 900);
+}
+
+/* ─── DASHBOARD RENDERING ────────────────────── */
+let activeDashPanel = 'overview';
+function switchDash(panel, el) {
+  document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  ['overview','subjects','grades','attendance','announcements','events'].forEach(p => {
+    const el2 = document.getElementById('dash-' + p);
+    if (el2) el2.style.display = p === panel ? 'block' : 'none';
+  });
+  activeDashPanel = panel;
+}
+
+function renderDashboard() {
+  // Subjects table
+  const tbody = document.getElementById('subjectTableBody');
+  if (tbody) {
+    tbody.innerHTML = SUBJECTS.map(s => `
+      <tr>
+        <td><strong style="color:var(--ink);font-size:13px;">${s.code}</strong><br><span style="font-size:12px">${s.name}</span></td>
+        <td style="text-align:center">${s.units}</td>
+        <td>${s.instructor}</td>
+        <td style="font-family:var(--font-mono);font-size:12px">${s.sched}</td>
+        <td>${s.room}</td>
+        <td><span class="badge badge-teal">Enrolled</span></td>
+      </tr>`).join('');
+  }
+
+  // Grades table
+  const gtbody = document.getElementById('gradeTableBody');
+  if (gtbody) {
+    gtbody.innerHTML = GRADES.map(g => {
+      const cls = g.grade <= 1.5 ? 'grade-a' : g.grade <= 2.0 ? 'grade-b' : 'grade-c';
+      const passed = g.grade <= 3.0;
+      return `<tr>
+        <td><strong style="color:var(--ink);font-size:13px;">${g.code}</strong><br><span style="font-size:12px">${g.name}</span></td>
+        <td style="text-align:center;font-family:var(--font-mono)">${g.midterm}</td>
+        <td style="text-align:center;font-family:var(--font-mono)">${g.finals}</td>
+        <td style="text-align:center"><span class="grade-pill ${cls}">${g.grade.toFixed(2)}</span></td>
+        <td style="font-size:13px;color:var(--ink-muted)">${g.equiv}</td>
+        <td><span class="badge ${passed?'badge-teal':'badge-red'}">${passed?'PASSED':'FAILED'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Grade distribution
+  const gDist = document.getElementById('gradeDist');
+  if (gDist) {
+    const dist = [
+      { label:'1.0 – 1.5 (Excellent)', count:2, color:'#4CAF50' },
+      { label:'1.75 – 2.0 (Very Good)', count:3, color:'var(--gold)' },
+      { label:'2.25 – 2.5 (Good)', count:1, color:'var(--teal)' },
+    ];
+    gDist.innerHTML = dist.map(d => `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;color:var(--ink-soft)">
+          <span>${d.label}</span><span style="font-family:var(--font-mono);font-weight:500">${d.count} subjects</span>
+        </div>
+        <div style="height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${(d.count/6)*100}%;background:${d.color};border-radius:3px;transition:width 1s ease"></div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Attendance bars
+  const aBars = document.getElementById('attendanceBars');
+  if (aBars) {
+    aBars.innerHTML = SUBJECTS.slice(0,5).map((s,i) => {
+      const pct = [97,94,90,98,92][i];
+      return `<div class="attend-row">
+        <div class="attend-label"><span style="font-size:12.5px">${s.code}</span><span style="font-family:var(--font-mono);font-size:12px">${pct}%</span></div>
+        <div class="attend-bar"><div class="attend-fill" style="width:${pct}%;background:${pct>=95?'var(--teal)':pct>=85?'var(--gold)':'var(--red-accent)'}"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Dash announcements
+  const dal = document.getElementById('dashAnnounceList');
+  if (dal) {
+    dal.innerHTML = ANNOUNCEMENTS.slice(0,5).map(a => `
+      <div class="card" style="padding:20px 24px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <div style="font-size:11px;font-family:var(--font-mono);color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">${a.cat}</div>
+            <div style="font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--ink);margin-bottom:6px">${a.title}</div>
+            <div style="font-size:13.5px;color:var(--ink-muted)">${a.excerpt}</div>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);white-space:nowrap">${a.day} ${a.month}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Dash events
+  const del = document.getElementById('dashEventsList');
+  if (del) {
+    del.innerHTML = DASH_EVENTS.map(e => `
+      <div class="card" style="padding:20px 24px;margin-bottom:12px;display:flex;align-items:center;gap:20px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:${e.color};flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-weight:500;font-size:14px;color:var(--ink)">${e.title}</div>
+          <div style="font-size:12.5px;color:var(--ink-muted);margin-top:2px">📍 ${e.loc}</div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-muted)">${e.date}</div>
+        <button class="btn btn-outline" style="padding:6px 14px;font-size:12px" onclick="showToast('Registered for ${e.title}!','success')">RSVP</button>
+      </div>`).join('');
+  }
+}
+
+/* ─── BLOG / ANNOUNCEMENTS ───────────────────── */
+let activeCategory = 'all';
+function renderBlog(filter = '') {
+  const list = document.getElementById('blogList');
+  if (!list) return;
+  let data = ANNOUNCEMENTS;
+  if (activeCategory !== 'all') data = data.filter(a => a.cat === activeCategory);
+  if (filter) data = data.filter(a => a.title.toLowerCase().includes(filter) || a.excerpt.toLowerCase().includes(filter));
+  list.innerHTML = data.map((a,i) => `
+    <div class="blog-card reveal delay-${(i%3)+1}" style="margin-bottom:14px;">
+      <div class="blog-card-date">
+        <span class="blog-card-day">${a.day}</span>
+        ${a.month}
+      </div>
+      <div class="blog-divider"></div>
+      <div class="blog-content">
+        <div class="blog-cat">${a.cat}</div>
+        <div class="blog-title">${a.title}</div>
+        <div class="blog-excerpt">${a.excerpt}</div>
+        <div class="tag-row">${a.tags.map(t=>`<span class="badge badge-neutral">${t}</span>`).join('')}</div>
+      </div>
+    </div>`).join('');
+  setTimeout(initReveal, 50);
+}
+function filterAnnouncements() { renderBlog(document.getElementById('announceSearch').value.toLowerCase()); }
+function filterByCategory(cat, el) {
+  activeCategory = cat;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderBlog(document.getElementById('announceSearch')?.value?.toLowerCase() || '');
+}
+
+/* ─── EVENTS PAGE ────────────────────────────── */
+function renderEvents() {
+  const grid = document.getElementById('eventsGrid');
+  if (!grid) return;
+  grid.innerHTML = EVENTS.map((e,i) => `
+    <div class="ev-card reveal delay-${i+1}">
+      <div class="ev-card-header" style="background:${e.color}">
+        <div>
+          <span style="font-size:2rem">${e.emoji}</span>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);margin-top:6px;letter-spacing:.06em">${e.date}</div>
+        </div>
+        <div class="tag-row" style="margin-top:0">${e.tags.map(t=>`<span class="badge badge-neutral" style="font-size:10px">${t}</span>`).join('')}</div>
+      </div>
+      <div class="ev-card-body">
+        <div class="ev-title">${e.title}</div>
+        <div class="ev-meta-row">
+          <div class="ev-meta">⏰ ${e.time}</div>
+          <div class="ev-meta">📍 ${e.location}</div>
+        </div>
+        <div class="ev-desc">${e.desc}</div>
+        <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="showToast('Registered for ${e.title}!','success')">Register →</button>
+      </div>
+    </div>`).join('');
+  setTimeout(initReveal, 50);
+}
+
+/* ─── CALENDAR ───────────────────────────────── */
+function renderCalendar() {
+  const container = document.getElementById('calDays');
+  if (!container) return;
+  const eventDays = [10,13,15,17,18,20,24,31];
+  const today = 22;
+  // Jan 2025 starts on Wednesday (index 3)
+  const startDay = 3;
+  const totalDays = 31;
+  let html = '';
+  // prev month padding
+  for (let i = 0; i < startDay; i++) html += `<div class="cal-day other-month">${26+i}</div>`;
+  for (let d = 1; d <= totalDays; d++) {
+    const cls = d === today ? 'today' : eventDays.includes(d) ? 'has-event' : '';
+    html += `<div class="cal-day ${cls}" onclick="showToast('${cls === 'has-event' ? 'Event on Jan '+d : 'Jan '+d+', 2025'}','info')">${d}</div>`;
+  }
+  const remaining = (7 - ((startDay + totalDays) % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) html += `<div class="cal-day other-month">${i}</div>`;
+  container.innerHTML = html;
+}
+
+/* ─── INIT ───────────────────────────────────── */
+renderBlog();
+</script>
+</body>
+</html>
